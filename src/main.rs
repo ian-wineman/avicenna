@@ -1,10 +1,6 @@
-extern crate find_folder;
-extern crate piston_window;
-
+use piston_window::Button::Keyboard;
+use piston_window::Key;	
 use piston_window::*;
-
-mod input;
-use input::key_press;
 
 struct Document {
     data: Vec<String>,
@@ -57,6 +53,11 @@ impl Document {
     }
 
     fn render(&self, window: &mut PistonWindow, event: Event) {
+        // White background
+        window.draw_2d(&event, |_c, g, _device| {
+            clear([1.0, 1.0, 1.0, 1.0], g);
+        });
+
         // Load font
         let mut glyphs = window
             .load_font(&self.font_path)
@@ -79,48 +80,97 @@ impl Document {
             line_counter += 1.0;
         }
     }
+
+    #[allow(unused_assignments)]
+    fn key_press(&mut self, args: &Button) {
+        //println!("{:?}", *args);
+
+        let mut key: String = String::from("");
+
+        match *args {
+            //Keyboard(Key::A, Key::LShift) => self.append(String::from("A")),
+            Keyboard(Key::A) => key = String::from("a"),
+            Keyboard(Key::B) => key = String::from("b"),
+            Keyboard(Key::C) => key = String::from("c"),
+            Keyboard(Key::D) => key = String::from("d"),
+            Keyboard(Key::E) => key = String::from("e"),
+            Keyboard(Key::F) => key = String::from("f"),
+            Keyboard(Key::G) => key = String::from("g"),
+            Keyboard(Key::H) => key = String::from("h"),
+            Keyboard(Key::I) => key = String::from("i"),
+            Keyboard(Key::J) => key = String::from("j"),
+            Keyboard(Key::K) => key = String::from("k"),
+            Keyboard(Key::L) => key = String::from("l"),
+            Keyboard(Key::M) => key = String::from("m"),
+            Keyboard(Key::N) => key = String::from("n"),
+            Keyboard(Key::O) => key = String::from("o"),
+            Keyboard(Key::P) => key = String::from("p"),
+            Keyboard(Key::Q) => key = String::from("q"),
+            Keyboard(Key::R) => key = String::from("r"),
+            Keyboard(Key::S) => key = String::from("s"),
+            Keyboard(Key::T) => key = String::from("t"),
+            Keyboard(Key::U) => key = String::from("u"),
+            Keyboard(Key::V) => key = String::from("v"),
+            Keyboard(Key::W) => key = String::from("w"),
+            Keyboard(Key::X) => key = String::from("x"),
+            Keyboard(Key::Y) => key = String::from("y"),
+            Keyboard(Key::Z) => key = String::from("z"),
+            Keyboard(Key::D0) => key = String::from("0"),
+            Keyboard(Key::D1) => key = String::from("1"),
+            Keyboard(Key::D2) => key = String::from("2"),
+            Keyboard(Key::D3) => key = String::from("3"),
+            Keyboard(Key::D4) => key = String::from("4"),
+            Keyboard(Key::D5) => key = String::from("5"),
+            Keyboard(Key::D6) => key = String::from("6"),
+            Keyboard(Key::D7) => key = String::from("7"),
+            Keyboard(Key::D8) => key = String::from("8"),
+            Keyboard(Key::D9) => key = String::from("9"),
+            Keyboard(Key::Backspace) => key = String::from("Backspace"), 
+            Keyboard(Key::Space) => key = String::from(" "),
+            Keyboard(Key::Return) => key = String::from("Return"),
+            Keyboard(Key::Tab) => key = String::from("    "),
+            _ => key = String::from("")
+        }
+
+        if key == String::from("Backspace") {
+            if self.data_length != 0 {
+                self.remove();
+            }
+        }
+        else if key == String::from("Return") {
+            self.append(key);
+        }
+        else if key == String::from("") {
+            // Do nothing, unrecognized symbol
+        }
+        else {
+            self.append(key);
+        }
+    }
 }
 
-
 fn main() {
-    // Create Document
+    // Create document
     let mut doc: Document = Document::new();
 
-    // Create Window
+    // Create window
     let mut window: PistonWindow = WindowSettings::new("Avicenna", [600, 600])
         .build()
         .unwrap();
 
-    // Event Loop
+    // Event loop
     window.set_lazy(true);
     while let Some(e) = window.next() {
+        
         // Get key press
         if let Some(ref args) = e.press_args() {
-            let new_symbol = key_press(args);
-            //println!("{}", new_symbol);
-
-            if new_symbol == String::from("Backspace") {
-                if doc.data_length != 0 {
-                    doc.remove();
-                }
-            }
-            else if new_symbol == String::from("Return") {
-                doc.append(new_symbol);
-            }
-            else if new_symbol == String::from("") {
-                // do nothing
-            }
-            else {
-                doc.append(new_symbol);
-            }
+            doc.key_press(args);
         }
 
-        // Set window background to white
-        window.draw_2d(&e, |_c, g, _device| {
-            clear([1.0, 1.0, 1.0, 1.0], g);
-        });
-
+        // Parse document
         doc.parse();
+        
+        // Render document
         doc.render(&mut window, e);
     }
 }

@@ -3,7 +3,6 @@ text editor written in Rust
 
 ## todo
 - input
-  - don't have "Return" or "Backspace" in the input.rs function
   - use of shift + key to insert a different key
     - lower and upper case letters
     - some special characters
