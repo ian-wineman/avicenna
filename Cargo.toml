@@ -1,0 +1,11 @@
+[package]
+name = "avicenna"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ian Wineman"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+piston_window = "*"
+find_folder = "*"
