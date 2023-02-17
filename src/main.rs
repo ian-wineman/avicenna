@@ -56,11 +56,29 @@ impl Document {
         self.parsed_data = parsed_strings;
     }
 
-    /*
-    fn render(&self) {
-        //
+    fn render(&self, window: &mut PistonWindow, event: Event) {
+        // Load font
+        let mut glyphs = window
+            .load_font(&self.font_path)
+            .unwrap();
+
+        // Draw lines of text
+        let mut line_counter = 1.0;
+        for line in self.parsed_data.iter() {
+            window.draw_2d(&event, |c, g, device| {
+                // Determine window position to draw to
+                let transform = c.transform.trans(8.0, 20.0*line_counter);
+    
+                // Draw on window
+                text::Text::new_color([0.0, 0.0, 0.0, 1.0], 18)
+                    .draw(line, &mut glyphs, &c.draw_state, transform, g)
+                    .unwrap();
+    
+                glyphs.factory.encoder.flush(device);
+            });
+            line_counter += 1.0;
+        }
     }
-    */
 }
 
 
@@ -102,35 +120,7 @@ fn main() {
             clear([1.0, 1.0, 1.0, 1.0], g);
         });
 
-        /*
-        let assets = find_folder::Search::ParentsThenKids(3, 3)
-            .for_folder("fonts")
-            .unwrap();
-        */
-
-        // Load font
-        let mut glyphs = window
-            .load_font(&doc.font_path)
-            //.load_font(assets.join("UbuntuMono-Regular.ttf"))
-            .unwrap();
-
-        // Draw lines of text
-        //doc.render();
-        let mut line_counter = 1.0;
         doc.parse();
-        for line in doc.parsed_data.iter() {
-            window.draw_2d(&e, |c, g, device| {
-                // Determine window position to draw to
-                let transform = c.transform.trans(8.0, 20.0*line_counter);
-    
-                // Draw on window
-                text::Text::new_color([0.0, 0.0, 0.0, 1.0], 18)
-                    .draw(line, &mut glyphs, &c.draw_state, transform, g)
-                    .unwrap();
-    
-                glyphs.factory.encoder.flush(device);
-            });
-            line_counter += 1.0;
-        }
+        doc.render(&mut window, e);
     }
 }
