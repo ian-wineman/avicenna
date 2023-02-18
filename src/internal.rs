@@ -7,8 +7,10 @@ pub struct Document {
     data_length: usize,
     parsed_data: Vec<String>,
     font_path: std::path::PathBuf,
-    //cursor_x: f64,
-    //cursor_y: f64,
+    font_size: u32,
+    cursor_x: usize, // cursor x, relative to elemnents of parsed_data
+    cursor_y: usize, // cursor y, relative to elemnents of parsed_data
+    char_width: f64,
 }
 
 impl Document {
@@ -20,7 +22,16 @@ impl Document {
 
         let path = assets.join("UbuntuMono-Regular.ttf");
 
-        return Document { data: vec![String::from("")], data_length: 0, parsed_data: vec![String::from("")], font_path: path }
+        return Document { 
+            data: vec![String::from("")], 
+            data_length: 0, 
+            parsed_data: vec![String::from("")], 
+            font_path: path, 
+            font_size: 18,
+            cursor_x: 0,
+            cursor_y: 0,
+            char_width: 0.0,
+        }
     }
 
     pub fn append(&mut self, symbol: String) {
@@ -52,7 +63,7 @@ impl Document {
         self.parsed_data = parsed_strings;
     }
 
-    pub fn render(&self, window: &mut PistonWindow, event: Event) {
+    pub fn render(&mut self, window: &mut PistonWindow, event: Event) {
         // White background
         window.draw_2d(&event, |_c, g, _device| {
             clear([1.0, 1.0, 1.0, 1.0], g);
@@ -63,15 +74,19 @@ impl Document {
             .load_font(&self.font_path)
             .unwrap();
 
+        // Set font width
+        self.char_width = glyphs.width(self.font_size, "a").expect("").ceil();
+
         // Draw lines of text
         let mut line_counter = 1.0;
         for line in self.parsed_data.iter() {
             window.draw_2d(&event, |c, g, device| {
                 // Determine window position to draw to
-                let transform = c.transform.trans(8.0, 20.0*line_counter);
+                //let transform = c.transform.trans(8.0, 18.0*line_counter);
+                let transform = c.transform.trans(6.0, 18.0*line_counter + 1.0);
     
                 // Draw on window
-                text::Text::new_color([0.0, 0.0, 0.0, 1.0], 18)
+                text::Text::new_color([0.0, 0.0, 0.0, 1.0], self.font_size)
                     .draw(line, &mut glyphs, &c.draw_state, transform, g)
                     .unwrap();
     
@@ -136,9 +151,6 @@ impl Document {
             if self.data_length != 0 {
                 self.remove();
             }
-        }
-        else if key == String::from("Return") {
-            self.append(key);
         }
         else if key == String::from("") {
             // Do nothing, unrecognized symbol

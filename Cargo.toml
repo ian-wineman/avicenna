@@ -9,3 +9,7 @@ authors = ["Ian Wineman"]
 [dependencies]
 piston_window = "*"
 find_folder = "*"
+
+[dependencies.piston2d-graphics]
+version = "*"
+features = ["glyph_cache_rusttype"]
