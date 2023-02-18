@@ -2,6 +2,11 @@
 text editor written in Rust
 
 ## todo
+1. Properly update cursor_x & cursor_y as new characters are added and removed
+2. Use cursor_x, cursor_y, & char_width to draw cursor in correct position
+3. Implement arrow keys to move cursor position
+
+## future features
 - input
   - use of shift + key to insert a different key
     - lower and upper case letters
