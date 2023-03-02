@@ -8,8 +8,7 @@ pub struct Document {
     parsed_data: Vec<String>,
     font_path: std::path::PathBuf,
     font_size: u32,
-    cursor_x: usize, // cursor x, relative to elemnents of parsed_data
-    cursor_y: usize, // cursor y, relative to elemnents of parsed_data
+    cursor: usize, // position in data 0..len
     char_width: f64,
 }
 
@@ -28,20 +27,54 @@ impl Document {
             parsed_data: vec![String::from("")], 
             font_path: path, 
             font_size: 18,
-            cursor_x: 0,
-            cursor_y: 0,
+            cursor: 0,
             char_width: 0.0,
         }
     }
 
     pub fn append(&mut self, symbol: String) {
-        self.data.push(symbol);
         self.data_length += 1;
+
+        // Append at cursor position
+        let mut counter: usize = 0;
+        let mut result: Vec<String> = Vec::new();
+
+        for s in self.data.iter() {
+            
+            if counter != self.cursor {
+                result.push(s.to_string());
+            }
+            else {
+                result.push((*symbol).to_string());
+                result.push(s.to_string());
+            }
+            
+            counter += 1;
+        }
+        self.cursor += 1;
+        self.data = result;
     }
 
     pub fn remove(&mut self) {
-        self.data.truncate(self.data_length - 1);
         self.data_length -= 1;
+
+        // Remove at cursor position
+        let mut counter: usize = 0;
+        let mut result: Vec<String> = Vec::new();
+
+        for s in self.data.iter() {
+            
+            if counter != self.cursor - 1 {
+                result.push(s.to_string());
+            }
+            else {
+                //
+            }
+            
+            counter += 1;
+        }
+        self.cursor -= 1;
+        self.data = result;
     }
 
     pub fn parse(&mut self) {
@@ -61,6 +94,12 @@ impl Document {
         parsed_strings.push(working_string);
 
         self.parsed_data = parsed_strings;
+
+        // Testing
+        println!("");
+        println!("cursor: {}", self.cursor);
+        println!("self.data: {:?}", self.data);
+        println!("self.parsed_data: {:?}", self.parsed_data);
     }
 
     pub fn render(&mut self, window: &mut PistonWindow, event: Event) {
@@ -82,8 +121,7 @@ impl Document {
         for line in self.parsed_data.iter() {
             window.draw_2d(&event, |c, g, device| {
                 // Determine window position to draw to
-                //let transform = c.transform.trans(8.0, 18.0*line_counter);
-                let transform = c.transform.trans(6.0, 18.0*line_counter + 1.0);
+                let transform = c.transform.trans(6.0, self.font_size as f64 * line_counter + 1.0);
     
                 // Draw on window
                 text::Text::new_color([0.0, 0.0, 0.0, 1.0], self.font_size)
@@ -94,6 +132,35 @@ impl Document {
             });
             line_counter += 1.0;
         }
+
+        // Draw cursor
+        let mut x: usize = 0;
+        let mut y: usize = 0;
+        let mut cursor_counter: usize = 0;
+
+        for s in self.data.iter() {
+            if s.to_string() == String::from("Return") && cursor_counter < self.cursor {
+                x = 0;
+                y += 1;
+            }
+            else if cursor_counter < self.cursor {
+                x += 1;
+            }
+            else {
+                //
+            }
+
+            cursor_counter += 1;
+        }
+        println!("x: {}, y: {}", x, y);
+
+        window.draw_2d(&event, |c, g, _| {
+            let transform = c.transform.trans(6.0 + self.char_width * x as f64, self.font_size as f64 * y as f64 + 1.0);
+
+            rectangle([1.0, 0.0, 0.0, 1.0], // red
+                      [0.0, 0.0, 1.5, self.font_size as f64], // rectangle
+                      transform, g);
+        });
     }
 
     #[allow(unused_assignments)]
@@ -143,13 +210,26 @@ impl Document {
             Keyboard(Key::Backspace) => key = String::from("Backspace"), 
             Keyboard(Key::Space) => key = String::from(" "),
             Keyboard(Key::Return) => key = String::from("Return"),
-            Keyboard(Key::Tab) => key = String::from("    "),
+            Keyboard(Key::Right) => key = String::from("RightArrow"),
+            Keyboard(Key::Left) => key = String::from("LeftArrow"),
             _ => key = String::from("")
         }
 
         if key == String::from("Backspace") {
             if self.data_length != 0 {
                 self.remove();
+            }
+        }
+        else if key == String::from("RightArrow") {
+            //
+            if self.cursor < self.data_length {
+                self.cursor += 1;
+            }
+        }
+        else if key == String::from("LeftArrow") {
+            //
+            if self.cursor != 0 {
+                self.cursor -= 1;
             }
         }
         else if key == String::from("") {
