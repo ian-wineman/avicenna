@@ -22,6 +22,9 @@ fn main() {
 
         // Parse document
         doc.parse();
+
+        // Update cursor
+        doc.update_cursor();
         
         // Render document
         doc.render(&mut window, e);

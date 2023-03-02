@@ -8,8 +8,10 @@ pub struct Document {
     parsed_data: Vec<String>,
     font_path: std::path::PathBuf,
     font_size: u32,
-    cursor: usize, // position in data 0..len
     char_width: f64,
+    cursor: usize,   // cursor position in data
+    cursor_x: usize, // cursor position in parsed_data
+    cursor_y: usize, // cursor position in parsed_data
 }
 
 impl Document {
@@ -27,9 +29,34 @@ impl Document {
             parsed_data: vec![String::from("")], 
             font_path: path, 
             font_size: 18,
-            cursor: 0,
             char_width: 0.0,
+            cursor: 0,
+            cursor_x: 0,
+            cursor_y: 0,
         }
+    }
+
+    pub fn update_cursor(&mut self) {
+        let mut x: usize = 0;
+        let mut y: usize = 0;
+        let mut cursor_counter: usize = 0;
+
+        for s in self.data.iter() {
+            if s.to_string() == String::from("Return") && cursor_counter < self.cursor {
+                x = 0;
+                y += 1;
+            }
+            else if cursor_counter < self.cursor {
+                x += 1;
+            }
+            else {
+                //
+            }
+
+            cursor_counter += 1;
+        }
+        self.cursor_x = x;
+        self.cursor_y = y;
     }
 
     pub fn append(&mut self, symbol: String) {
@@ -64,16 +91,20 @@ impl Document {
 
         for s in self.data.iter() {
             
-            if counter != self.cursor - 1 {
-                result.push(s.to_string());
-            }
-            else {
-                //
+            if self.cursor > 0 {
+                if counter != self.cursor - 1 {
+                    result.push(s.to_string());
+                }
+                else {
+                    //
+                }
             }
             
             counter += 1;
         }
-        self.cursor -= 1;
+        if self.cursor > 0 {
+            self.cursor -= 1;
+        }
         self.data = result;
     }
 
@@ -97,9 +128,11 @@ impl Document {
 
         // Testing
         println!("");
+        println!("data_length: {}", self.data_length);
         println!("cursor: {}", self.cursor);
-        println!("self.data: {:?}", self.data);
-        println!("self.parsed_data: {:?}", self.parsed_data);
+        println!("data: {:?}", self.data);
+        println!("parsed_data: {:?}", self.parsed_data);
+        println!("x: {}, y: {}", self.cursor_x, self.cursor_y);
     }
 
     pub fn render(&mut self, window: &mut PistonWindow, event: Event) {
@@ -134,28 +167,8 @@ impl Document {
         }
 
         // Draw cursor
-        let mut x: usize = 0;
-        let mut y: usize = 0;
-        let mut cursor_counter: usize = 0;
-
-        for s in self.data.iter() {
-            if s.to_string() == String::from("Return") && cursor_counter < self.cursor {
-                x = 0;
-                y += 1;
-            }
-            else if cursor_counter < self.cursor {
-                x += 1;
-            }
-            else {
-                //
-            }
-
-            cursor_counter += 1;
-        }
-        println!("x: {}, y: {}", x, y);
-
         window.draw_2d(&event, |c, g, _| {
-            let transform = c.transform.trans(6.0 + self.char_width * x as f64, self.font_size as f64 * y as f64 + 1.0);
+            let transform = c.transform.trans(6.0 + self.char_width * self.cursor_x as f64, self.font_size as f64 * self.cursor_y as f64 + 1.0);
 
             rectangle([1.0, 0.0, 0.0, 1.0], // red
                       [0.0, 0.0, 1.5, self.font_size as f64], // rectangle
@@ -212,24 +225,59 @@ impl Document {
             Keyboard(Key::Return) => key = String::from("Return"),
             Keyboard(Key::Right) => key = String::from("RightArrow"),
             Keyboard(Key::Left) => key = String::from("LeftArrow"),
+            Keyboard(Key::Up) => key = String::from("UpArrow"),
+            Keyboard(Key::Down) => key = String::from("DownArrow"),
             _ => key = String::from("")
         }
 
         if key == String::from("Backspace") {
-            if self.data_length != 0 {
+            if self.data_length != 0 && self.cursor != 0 {
                 self.remove();
+                self.update_cursor();
             }
         }
         else if key == String::from("RightArrow") {
-            //
             if self.cursor < self.data_length {
                 self.cursor += 1;
             }
         }
         else if key == String::from("LeftArrow") {
-            //
             if self.cursor != 0 {
                 self.cursor -= 1;
+            }
+        }
+        else if key == String::from("UpArrow") {
+            if self.cursor_y != 0 {
+
+                if self.parsed_data[self.cursor_y].len() < self.parsed_data[self.cursor_y - 1].len() {
+                    self.cursor -= self.parsed_data[self.cursor_y - 1].len() + 1; 
+                }
+                else if self.parsed_data[self.cursor_y].len() == self.parsed_data[self.cursor_y - 1].len() {
+                    self.cursor -= self.parsed_data[self.cursor_y].len() + 1; 
+                }
+                else if self.parsed_data[self.cursor_y].len() > self.parsed_data[self.cursor_y - 1].len() && self.cursor_x <= self.parsed_data[self.cursor_y - 1].len() {
+                    self.cursor -= self.parsed_data[self.cursor_y - 1].len() + 1;
+                }
+                else {
+                    self.cursor -= self.cursor_x + 1
+                }
+            }
+        }
+        else if key == String::from("DownArrow") {
+            if self.cursor_y != self.parsed_data.len() - 1 {
+
+                if self.parsed_data[self.cursor_y].len() < self.parsed_data[self.cursor_y + 1].len() {
+                    self.cursor += self.parsed_data[self.cursor_y].len() + 1;
+                }
+                else if self.parsed_data[self.cursor_y].len() == self.parsed_data[self.cursor_y + 1].len() {
+                    self.cursor += self.parsed_data[self.cursor_y].len() + 1; 
+                }
+                else if self.parsed_data[self.cursor_y].len() > self.parsed_data[self.cursor_y + 1].len() && self.cursor_x <= self.parsed_data[self.cursor_y + 1].len() {
+                    self.cursor += self.parsed_data[self.cursor_y].len() + 1; 
+                }
+                else {
+                    self.cursor += self.parsed_data[self.cursor_y + 1].len() + self.parsed_data[self.cursor_y].len() - self.cursor_x + 1;
+                }
             }
         }
         else if key == String::from("") {
@@ -237,6 +285,7 @@ impl Document {
         }
         else {
             self.append(key);
+            self.update_cursor();
         }
     }
 }
