@@ -9,9 +9,11 @@ pub struct Document {
     font_path: std::path::PathBuf,
     font_size: u32,
     char_width: f64,
-    cursor: usize,   // cursor position in data
-    cursor_x: usize, // cursor position in parsed_data
-    cursor_y: usize, // cursor position in parsed_data
+    cursor: usize,       // cursor position in data
+    cursor_x: usize,     // cursor position in parsed_data
+    cursor_y: usize,     // cursor position in parsed_data
+    cursor_pixel_x: f64, // cursor position in window
+    cursor_pixel_y: f64, // cursor position in window
 }
 
 impl Document {
@@ -33,6 +35,8 @@ impl Document {
             cursor: 0,
             cursor_x: 0,
             cursor_y: 0,
+            cursor_pixel_x: 0.0,
+            cursor_pixel_y: 0.0,
         }
     }
 
@@ -133,6 +137,7 @@ impl Document {
         println!("data: {:?}", self.data);
         println!("parsed_data: {:?}", self.parsed_data);
         println!("x: {}, y: {}", self.cursor_x, self.cursor_y);
+        println!("px: {}, py: {}", self.cursor_pixel_x, self.cursor_pixel_y);
     }
 
     pub fn render(&mut self, window: &mut PistonWindow, event: Event) {
@@ -174,6 +179,13 @@ impl Document {
                       [0.0, 0.0, 1.5, self.font_size as f64], // rectangle
                       transform, g);
         });
+    }
+
+    pub fn mouse_move(&mut self, args: &[f64; 2]) {
+        //println!("{:?}", *args);
+
+        self.cursor_pixel_x = args[0];
+        self.cursor_pixel_y = args[1];
     }
 
     #[allow(unused_assignments)]

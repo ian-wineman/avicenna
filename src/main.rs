@@ -14,10 +14,15 @@ fn main() {
     // Event loop
     window.set_lazy(true);
     while let Some(e) = window.next() {
-        
+
         // Get key press
         if let Some(ref args) = e.press_args() {
             doc.key_press(args);
+        }
+        // Get mouse move
+        else if let Some(ref args) = e.mouse_cursor_args() {
+            //println!("{:?}", args);
+            doc.mouse_move(args);
         }
 
         // Parse document
