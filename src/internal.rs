@@ -41,6 +41,7 @@ impl Document {
     }
 
     pub fn update_cursor(&mut self) {
+        // Update cursor_x and cursor_y given cursor
         let mut x: usize = 0;
         let mut y: usize = 0;
         let mut cursor_counter: usize = 0;
@@ -131,6 +132,7 @@ impl Document {
         self.parsed_data = parsed_strings;
 
         // Testing
+        /*
         println!("");
         println!("data_length: {}", self.data_length);
         println!("cursor: {}", self.cursor);
@@ -138,6 +140,7 @@ impl Document {
         println!("parsed_data: {:?}", self.parsed_data);
         println!("x: {}, y: {}", self.cursor_x, self.cursor_y);
         println!("px: {}, py: {}", self.cursor_pixel_x, self.cursor_pixel_y);
+        */
     }
 
     pub fn render(&mut self, window: &mut PistonWindow, event: Event) {
@@ -236,6 +239,7 @@ impl Document {
             Keyboard(Key::Left) => { String::from("LeftArrow") },
             Keyboard(Key::Up) => { String::from("UpArrow") },
             Keyboard(Key::Down) => { String::from("DownArrow") },
+            Button::Mouse(MouseButton::Left) => { String::from("LeftMouse") },
             _ => { String::from("") }
         };
 
@@ -286,6 +290,46 @@ impl Document {
                 }
                 else {
                     self.cursor += self.parsed_data[self.cursor_y + 1].len() + self.parsed_data[self.cursor_y].len() - self.cursor_x + 1;
+                }
+            }
+        }
+        else if key == String::from("LeftMouse") {
+            // update cursor based on cursor_pixel_x and cursor_pixel_y
+
+            '_iter: for cursor_position in 0..(self.data_length + 1) {
+                let mut x: usize = 0;
+                let mut y: usize = 0;
+                let mut cursor_counter: usize = 0;
+
+                for s in self.data.iter() {
+                    if s.to_string() == String::from("Return") && cursor_counter < cursor_position {
+                        x = 0;
+                        y += 1;
+                    }
+                    else if cursor_counter < cursor_position {
+                        x += 1;
+                    }
+                    else {
+                        //
+                    }
+
+                    cursor_counter += 1;
+                }
+                let tmp_cursor_x = x;
+                let tmp_cursor_y = y;
+
+                let tmp_cursor_pixel_x = 6.0 + self.char_width * tmp_cursor_x as f64;
+                let tmp_cursor_pixel_y = self.font_size as f64 * tmp_cursor_y as f64 + 1.0;
+
+                // is self.char_width the right margin to use here?
+                if (tmp_cursor_pixel_x - self.cursor_pixel_x).abs() < self.char_width && (tmp_cursor_pixel_y - self.cursor_pixel_y).abs() < self.char_width {
+                    
+                    // Testing
+                    println!("{}, {} (char_width = {})", (tmp_cursor_pixel_x - self.cursor_pixel_x).abs(), (tmp_cursor_pixel_y - self.cursor_pixel_y).abs(), self.char_width);
+                    
+                    self.cursor = cursor_position;
+                    self.update_cursor();
+                    break '_iter;
                 }
             }
         }
