@@ -23,7 +23,6 @@ fn main() {
                         match buttonargs.state {
                             ButtonState::Press => doc.key_press(&buttonargs.button),
                             ButtonState::Release => (), // might use this for Lshift
-                            _ => (),
                         }
                     },
                     Input::Move(motion) => {

@@ -14,6 +14,7 @@ pub struct Document {
     cursor_y: usize,     // cursor position in parsed_data
     cursor_pixel_x: f64, // cursor position in window
     cursor_pixel_y: f64, // cursor position in window
+    key_buffer: Vec<String>, // TODO (holds last two or three keys to deal with LShift + A)
 }
 
 impl Document {
@@ -37,6 +38,7 @@ impl Document {
             cursor_y: 0,
             cursor_pixel_x: 0.0,
             cursor_pixel_y: 0.0,
+            key_buffer: vec![String::from("")], 
         }
     }
 
@@ -195,146 +197,149 @@ impl Document {
     pub fn key_press(&mut self, args: &Button) {
         //println!("{:?}", *args);
 
-        let key: String = match *args {
-            Keyboard(Key::A) => { String::from("a") },
-            Keyboard(Key::B) => { String::from("b") },
-            Keyboard(Key::C) => { String::from("c") },
-            Keyboard(Key::D) => { String::from("d") },
-            Keyboard(Key::E) => { String::from("e") },
-            Keyboard(Key::F) => { String::from("f") },
-            Keyboard(Key::G) => { String::from("g") },
-            Keyboard(Key::H) => { String::from("h") },
-            Keyboard(Key::I) => { String::from("i") },
-            Keyboard(Key::J) => { String::from("j") },
-            Keyboard(Key::K) => { String::from("k") },
-            Keyboard(Key::L) => { String::from("l") },
-            Keyboard(Key::M) => { String::from("m") },
-            Keyboard(Key::N) => { String::from("n") },
-            Keyboard(Key::O) => { String::from("o") },
-            Keyboard(Key::P) => { String::from("p") },
-            Keyboard(Key::Q) => { String::from("q") },
-            Keyboard(Key::R) => { String::from("r") },
-            Keyboard(Key::S) => { String::from("s") },
-            Keyboard(Key::T) => { String::from("t") },
-            Keyboard(Key::U) => { String::from("u") },
-            Keyboard(Key::V) => { String::from("v") },
-            Keyboard(Key::W) => { String::from("w") },
-            Keyboard(Key::X) => { String::from("x") },
-            Keyboard(Key::Y) => { String::from("y") },
-            Keyboard(Key::Z) => { String::from("z") },
-            Keyboard(Key::D0) => { String::from("0") },
-            Keyboard(Key::D1) => { String::from("1") },
-            Keyboard(Key::D2) => { String::from("2") },
-            Keyboard(Key::D3) => { String::from("3") },
-            Keyboard(Key::D4) => { String::from("4") },
-            Keyboard(Key::D5) => { String::from("5") },
-            Keyboard(Key::D6) => { String::from("6") },
-            Keyboard(Key::D7) => { String::from("7") },
-            Keyboard(Key::D8) => { String::from("8") },
-            Keyboard(Key::D9) => { String::from("9") },
-            Keyboard(Key::Backspace) => { String::from("Backspace") }, 
-            Keyboard(Key::Space) => { String::from(" ") },
-            Keyboard(Key::Return) => { String::from("Return") },
-            Keyboard(Key::Right) => { String::from("RightArrow") },
-            Keyboard(Key::Left) => { String::from("LeftArrow") },
-            Keyboard(Key::Up) => { String::from("UpArrow") },
-            Keyboard(Key::Down) => { String::from("DownArrow") },
-            Button::Mouse(MouseButton::Left) => { String::from("LeftMouse") },
-            _ => { String::from("") }
+        let key: &str = match *args {
+            Keyboard(Key::A) => { "a" },
+            Keyboard(Key::B) => { "b" },
+            Keyboard(Key::C) => { "c" },
+            Keyboard(Key::D) => { "d" },
+            Keyboard(Key::E) => { "e" },
+            Keyboard(Key::F) => { "f" },
+            Keyboard(Key::G) => { "g" },
+            Keyboard(Key::H) => { "h" },
+            Keyboard(Key::I) => { "i" },
+            Keyboard(Key::J) => { "j" },
+            Keyboard(Key::K) => { "k" },
+            Keyboard(Key::L) => { "l" },
+            Keyboard(Key::M) => { "m" },
+            Keyboard(Key::N) => { "n" },
+            Keyboard(Key::O) => { "o" },
+            Keyboard(Key::P) => { "p" },
+            Keyboard(Key::Q) => { "q" },
+            Keyboard(Key::R) => { "r" },
+            Keyboard(Key::S) => { "s" },
+            Keyboard(Key::T) => { "t" },
+            Keyboard(Key::U) => { "u" },
+            Keyboard(Key::V) => { "v" },
+            Keyboard(Key::W) => { "w" },
+            Keyboard(Key::X) => { "x" },
+            Keyboard(Key::Y) => { "y" },
+            Keyboard(Key::Z) => { "z" },
+            Keyboard(Key::D0) => { "0" },
+            Keyboard(Key::D1) => { "1" },
+            Keyboard(Key::D2) => { "2" },
+            Keyboard(Key::D3) => { "3" },
+            Keyboard(Key::D4) => { "4" },
+            Keyboard(Key::D5) => { "5" },
+            Keyboard(Key::D6) => { "6" },
+            Keyboard(Key::D7) => { "7" },
+            Keyboard(Key::D8) => { "8" },
+            Keyboard(Key::D9) => { "9" },
+            Keyboard(Key::Backspace) => { "Backspace" }, 
+            Keyboard(Key::Space) => { " " },
+            Keyboard(Key::Return) => { "Return" },
+            Keyboard(Key::Right) => { "RightArrow" },
+            Keyboard(Key::Left) => { "LeftArrow" },
+            Keyboard(Key::Up) => { "UpArrow" },
+            Keyboard(Key::Down) => { "DownArrow" },
+            Button::Mouse(MouseButton::Left) => { "LeftMouse" },
+            _ => { "" }
         };
 
-        if key == String::from("Backspace") {
-            if self.data_length != 0 && self.cursor != 0 {
-                self.remove();
-                self.update_cursor();
-            }
-        }
-        else if key == String::from("RightArrow") {
-            if self.cursor < self.data_length {
-                self.cursor += 1;
-            }
-        }
-        else if key == String::from("LeftArrow") {
-            if self.cursor != 0 {
-                self.cursor -= 1;
-            }
-        }
-        else if key == String::from("UpArrow") {
-            if self.cursor_y != 0 {
+        match key {
+            "Backspace" => {
+                if self.data_length != 0 && self.cursor != 0 {
+                    self.remove();
+                    self.update_cursor();
+                }
+            },
+            "RightArrow" => {
+                if self.cursor < self.data_length {
+                    self.cursor += 1;
+                }
+            },
+            "LeftArrow" => {
+                if self.cursor != 0 {
+                    self.cursor -= 1;
+                }
+            },
+            "UpArrow" => {
+                if self.cursor_y != 0 {
 
-                if self.parsed_data[self.cursor_y].len() < self.parsed_data[self.cursor_y - 1].len() {
-                    self.cursor -= self.parsed_data[self.cursor_y - 1].len() + 1; 
-                }
-                else if self.parsed_data[self.cursor_y].len() == self.parsed_data[self.cursor_y - 1].len() {
-                    self.cursor -= self.parsed_data[self.cursor_y].len() + 1; 
-                }
-                else if self.parsed_data[self.cursor_y].len() > self.parsed_data[self.cursor_y - 1].len() && self.cursor_x <= self.parsed_data[self.cursor_y - 1].len() {
-                    self.cursor -= self.parsed_data[self.cursor_y - 1].len() + 1;
-                }
-                else {
-                    self.cursor -= self.cursor_x + 1
-                }
-            }
-        }
-        else if key == String::from("DownArrow") {
-            if self.cursor_y != self.parsed_data.len() - 1 {
-
-                if self.parsed_data[self.cursor_y].len() < self.parsed_data[self.cursor_y + 1].len() {
-                    self.cursor += self.parsed_data[self.cursor_y].len() + 1;
-                }
-                else if self.parsed_data[self.cursor_y].len() == self.parsed_data[self.cursor_y + 1].len() {
-                    self.cursor += self.parsed_data[self.cursor_y].len() + 1; 
-                }
-                else if self.parsed_data[self.cursor_y].len() > self.parsed_data[self.cursor_y + 1].len() && self.cursor_x <= self.parsed_data[self.cursor_y + 1].len() {
-                    self.cursor += self.parsed_data[self.cursor_y].len() + 1; 
-                }
-                else {
-                    self.cursor += self.parsed_data[self.cursor_y + 1].len() + self.parsed_data[self.cursor_y].len() - self.cursor_x + 1;
-                }
-            }
-        }
-        else if key == String::from("LeftMouse") {
-            // update cursor based on cursor_pixel_x and cursor_pixel_y
-
-            '_iter: for cursor_position in 0..(self.data_length + 1) {
-                let mut x: usize = 0;
-                let mut y: usize = 0;
-                let mut cursor_counter: usize = 0;
-
-                for s in self.data.iter() {
-                    if s.to_string() == String::from("Return") && cursor_counter < cursor_position {
-                        x = 0;
-                        y += 1;
+                    if self.parsed_data[self.cursor_y].len() < self.parsed_data[self.cursor_y - 1].len() {
+                        self.cursor -= self.parsed_data[self.cursor_y - 1].len() + 1; 
                     }
-                    else if cursor_counter < cursor_position {
-                        x += 1;
+                    else if self.parsed_data[self.cursor_y].len() == self.parsed_data[self.cursor_y - 1].len() {
+                        self.cursor -= self.parsed_data[self.cursor_y].len() + 1; 
+                    }
+                    else if self.parsed_data[self.cursor_y].len() > self.parsed_data[self.cursor_y - 1].len() && self.cursor_x <= self.parsed_data[self.cursor_y - 1].len() {
+                        self.cursor -= self.parsed_data[self.cursor_y - 1].len() + 1;
                     }
                     else {
-                        //
+                        self.cursor -= self.cursor_x + 1
                     }
-
-                    cursor_counter += 1;
                 }
-                let tmp_cursor_x = x;
-                let tmp_cursor_y = y;
+            },
+            "DownArrow" => {
+                if self.cursor_y != self.parsed_data.len() - 1 {
 
-                let tmp_cursor_pixel_x = 6.0 + self.char_width * tmp_cursor_x as f64;
-                let tmp_cursor_pixel_y = self.font_size as f64 * tmp_cursor_y as f64 + 1.0;
-
-                // is self.char_width the right margin to use here?
-                if (tmp_cursor_pixel_x - self.cursor_pixel_x).abs() < 0.8*self.char_width && (tmp_cursor_pixel_y - self.cursor_pixel_y).abs() < 1.5*self.char_width {                    
-                    self.cursor = cursor_position;
-                    self.update_cursor();
-                    break '_iter;
+                    if self.parsed_data[self.cursor_y].len() < self.parsed_data[self.cursor_y + 1].len() {
+                        self.cursor += self.parsed_data[self.cursor_y].len() + 1;
+                    }
+                    else if self.parsed_data[self.cursor_y].len() == self.parsed_data[self.cursor_y + 1].len() {
+                        self.cursor += self.parsed_data[self.cursor_y].len() + 1; 
+                    }
+                    else if self.parsed_data[self.cursor_y].len() > self.parsed_data[self.cursor_y + 1].len() && self.cursor_x <= self.parsed_data[self.cursor_y + 1].len() {
+                        self.cursor += self.parsed_data[self.cursor_y].len() + 1; 
+                    }
+                    else {
+                        self.cursor += self.parsed_data[self.cursor_y + 1].len() + self.parsed_data[self.cursor_y].len() - self.cursor_x + 1;
+                    }
                 }
-            }
-        }
-        else if key == String::from("") {
-            // Do nothing, unrecognized symbol
-        }
-        else {
-            self.append(key);
-            self.update_cursor();
+            },
+            "LeftMouse" => {
+                // update cursor based on cursor_pixel_x and cursor_pixel_y
+
+                '_iter: for cursor_position in 0..(self.data_length + 1) {
+                    let mut x: usize = 0;
+                    let mut y: usize = 0;
+                    let mut cursor_counter: usize = 0;
+
+                    for s in self.data.iter() {
+                        if s.to_string() == String::from("Return") && cursor_counter < cursor_position {
+                            x = 0;
+                            y += 1;
+                        }
+                        else if cursor_counter < cursor_position {
+                            x += 1;
+                        }
+                        else {
+                            //
+                        }
+
+                        cursor_counter += 1;
+                    }
+                    let tmp_cursor_x = x;
+                    let tmp_cursor_y = y;
+
+                    let tmp_cursor_pixel_x = 6.0 + self.char_width * tmp_cursor_x as f64;
+                    let tmp_cursor_pixel_y = self.font_size as f64 * tmp_cursor_y as f64 + 1.0;
+
+                    // is self.char_width the right margin to use here?
+                    if (tmp_cursor_pixel_x - self.cursor_pixel_x).abs() < 0.8*self.char_width && (tmp_cursor_pixel_y - self.cursor_pixel_y).abs() < 1.5*self.char_width {                    
+                        self.cursor = cursor_position;
+                        self.update_cursor();
+                        break '_iter;
+                    }
+                }
+            },
+            "" => {
+                // Do nothing, unrecognized symbol
+            },
+            _ => {
+                //self.append(key);
+                self.append(String::from(key));
+                self.update_cursor();
+            },
         }
     }
 }
