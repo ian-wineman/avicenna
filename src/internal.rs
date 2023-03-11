@@ -322,11 +322,7 @@ impl Document {
                 let tmp_cursor_pixel_y = self.font_size as f64 * tmp_cursor_y as f64 + 1.0;
 
                 // is self.char_width the right margin to use here?
-                if (tmp_cursor_pixel_x - self.cursor_pixel_x).abs() < self.char_width && (tmp_cursor_pixel_y - self.cursor_pixel_y).abs() < self.char_width {
-                    
-                    // Testing
-                    println!("{}, {} (char_width = {})", (tmp_cursor_pixel_x - self.cursor_pixel_x).abs(), (tmp_cursor_pixel_y - self.cursor_pixel_y).abs(), self.char_width);
-                    
+                if (tmp_cursor_pixel_x - self.cursor_pixel_x).abs() < 0.8*self.char_width && (tmp_cursor_pixel_y - self.cursor_pixel_y).abs() < 1.5*self.char_width {                    
                     self.cursor = cursor_position;
                     self.update_cursor();
                     break '_iter;
