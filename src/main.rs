@@ -15,14 +15,27 @@ fn main() {
     window.set_lazy(true);
     while let Some(e) = window.next() {
 
-        // Get key press
-        if let Some(ref args) = e.press_args() {
-            doc.key_press(args);
-        }
-        // Get mouse move
-        else if let Some(ref args) = e.mouse_cursor_args() {
-            //println!("{:?}", args);
-            doc.mouse_move(args);
+        // Match on event
+        match e {
+            Event::Input(ref input, _option) => {
+                match input {
+                    Input::Button(buttonargs) => {
+                        match buttonargs.state {
+                            ButtonState::Press => doc.key_press(&buttonargs.button),
+                            ButtonState::Release => (), // might use this for Lshift
+                            _ => (),
+                        }
+                    },
+                    Input::Move(motion) => {
+                        match motion {
+                            Motion::MouseCursor(coords) => doc.mouse_move(coords),
+                            _ => (),
+                        }
+                    },
+                    _ => (),
+                }
+            }
+            _ => (),
         }
 
         // Parse document
