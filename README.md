@@ -6,7 +6,6 @@ text editor written in Rust
 
 ## future features
 - input
-  - some special characters
   - paste from clipboard
   - hold keys
 - cursor

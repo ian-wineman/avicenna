@@ -253,6 +253,15 @@ impl Document {
             Keyboard(Key::Down) => { "DownArrow" },
             Keyboard(Key::LShift) => { "LShift" },
             Keyboard(Key::RShift) => { "RShift" },
+            Keyboard(Key::Minus) => { "-" },
+            Keyboard(Key::Equals) => { "=" },
+            Keyboard(Key::LeftBracket) => { "[" },
+            Keyboard(Key::RightBracket) => { "]" },
+            Keyboard(Key::Backslash) => { "\\" },
+            Keyboard(Key::Semicolon) => { ";" },
+            Keyboard(Key::Period) => { "." },
+            Keyboard(Key::Comma) => { "," },
+            Keyboard(Key::Slash) => { "/" },
             Button::Mouse(MouseButton::Left) => { "LeftMouse" },
             _ => { "" }
         };
@@ -353,14 +362,37 @@ impl Document {
             _ => { 
                 match self.caps {
                     true => {
-                        self.append(String::from(key.to_uppercase()));
-                        self.update_cursor();
+                        match key {
+                            "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" => {
+                                self.append(String::from(key.to_uppercase()));
+                            },
+                            "0" => { self.append(String::from(")")) },
+                            "1" => { self.append(String::from("!")) },
+                            "2" => { self.append(String::from("@")) },
+                            "3" => { self.append(String::from("#")) },
+                            "4" => { self.append(String::from("$")) },
+                            "5" => { self.append(String::from("%")) },
+                            "6" => { self.append(String::from("^")) },
+                            "7" => { self.append(String::from("&")) },
+                            "8" => { self.append(String::from("*")) },
+                            "9" => { self.append(String::from("(")) },
+                            "-" => { self.append(String::from("_")) },
+                            "=" => { self.append(String::from("+")) },
+                            "[" => { self.append(String::from("{")) },
+                            "]" => { self.append(String::from("}")) },
+                            "\\" => { self.append(String::from("|")) },
+                            ";" => { self.append(String::from(":")) },
+                            "." => { self.append(String::from(">")) },
+                            "," => { self.append(String::from("<")) },
+                            "/" => { self.append(String::from("?")) },
+                            _ => { },
+                        }
                     },
                     false => {
                         self.append(String::from(key));
-                        self.update_cursor();
                     },
                 }
+                self.update_cursor();
             },
         }
     }
