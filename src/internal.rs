@@ -14,7 +14,7 @@ pub struct Document {
     cursor_y: usize,     // cursor position in parsed_data
     cursor_pixel_x: f64, // cursor position in window
     cursor_pixel_y: f64, // cursor position in window
-    key_buffer: Vec<String>, // TODO (holds last two or three keys to deal with LShift + A)
+    caps: bool, // is caps enabled by LShift, RShift, or caps lock?
 }
 
 impl Document {
@@ -38,7 +38,7 @@ impl Document {
             cursor_y: 0,
             cursor_pixel_x: 0.0,
             cursor_pixel_y: 0.0,
-            key_buffer: vec![String::from("")], 
+            caps: false, 
         }
     }
 
@@ -74,7 +74,6 @@ impl Document {
         let mut result: Vec<String> = Vec::new();
 
         for s in self.data.iter() {
-            
             if counter != self.cursor {
                 result.push(s.to_string());
             }
@@ -97,7 +96,6 @@ impl Document {
         let mut result: Vec<String> = Vec::new();
 
         for s in self.data.iter() {
-            
             if self.cursor > 0 {
                 if counter != self.cursor - 1 {
                     result.push(s.to_string());
@@ -193,7 +191,19 @@ impl Document {
         self.cursor_pixel_y = args[1];
     }
 
-    #[allow(unused_assignments)]
+    pub fn key_release(&mut self, args: &Button) {
+        let key: &str = match *args {
+            Keyboard(Key::LShift) => { "LShift" },
+            Keyboard(Key::RShift) => { "RShift" },
+            _ => { "" }
+        };
+
+        match key {
+            "LShift" | "RShift" => { self.caps = false },
+            _ => (),
+        }
+    }
+
     pub fn key_press(&mut self, args: &Button) {
         //println!("{:?}", *args);
 
@@ -241,11 +251,16 @@ impl Document {
             Keyboard(Key::Left) => { "LeftArrow" },
             Keyboard(Key::Up) => { "UpArrow" },
             Keyboard(Key::Down) => { "DownArrow" },
+            Keyboard(Key::LShift) => { "LShift" },
+            Keyboard(Key::RShift) => { "RShift" },
             Button::Mouse(MouseButton::Left) => { "LeftMouse" },
             _ => { "" }
         };
 
         match key {
+            "LShift" | "RShift" => {
+                self.caps = true;
+            },
             "Backspace" => {
                 if self.data_length != 0 && self.cursor != 0 {
                     self.remove();
@@ -335,10 +350,17 @@ impl Document {
             "" => {
                 // Do nothing, unrecognized symbol
             },
-            _ => {
-                //self.append(key);
-                self.append(String::from(key));
-                self.update_cursor();
+            _ => { 
+                match self.caps {
+                    true => {
+                        self.append(String::from(key.to_uppercase()));
+                        self.update_cursor();
+                    },
+                    false => {
+                        self.append(String::from(key));
+                        self.update_cursor();
+                    },
+                }
             },
         }
     }
