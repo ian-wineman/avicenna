@@ -163,6 +163,7 @@ impl Document {
             window.draw_2d(&event, |c, g, device| {
                 // Determine window position to draw to
                 let transform = c.transform.trans(6.0, self.font_size as f64 * line_counter + 1.0);
+
     
                 // Draw on window
                 text::Text::new_color([0.0, 0.0, 0.0, 1.0], self.font_size)

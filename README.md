@@ -2,7 +2,7 @@
 text editor written in Rust
 
 ## todo
-1. use split_at for adding and removing characters
+1. use vec.insert() and vec.remove() for appending and removing characters: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.insert
 
 ## future features
 - input
